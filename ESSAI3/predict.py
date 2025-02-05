@@ -9,7 +9,7 @@ class FeatureExtractor:
     def __init__(self, url=""):
         self.url = url
         self.domain = url.split('//')[-1].split('/')[0]
-    # Özellikler
+    
     def url_entropy(self):
         url_trimmed = self.url.strip()
         entropy_distribution = [float(url_trimmed.count(c)) / len(url_trimmed) for c in dict.fromkeys(list(url_trimmed))]
@@ -76,26 +76,25 @@ with open("tokenizer.pkl", "rb") as handle:
 with open("label_encoder.pkl", "rb") as handle:
     label_encoder = pickle.load(handle)
 
-# Définir une URL à tester
+#url a tester
 #new_url = "http://target-site.com*')(password=*))"
 new_url = "https://youtube.com/watch?v=qnQ1vozGuEQ"
 
-# Extraire les caractéristiques de l'URL
+# extraction des caracteristiques
 extractor = FeatureExtractor(new_url)
 url_features = extractor.run()
 
-# Tokeniser et padder l'URL
+#tokenisation
 sequence = tokenizer.texts_to_sequences([new_url])
 padded_sequence = pad_sequences(sequence, maxlen=100, padding='post', truncating='post')
 
-# Préparer les caractéristiques supplémentaires
 extra_features = np.array([[url_features['entropy'], url_features['digits'],
                             url_features['url_length'], url_features['param_nums'],
                             url_features['has_http'], url_features['has_https'],
                             url_features['is_ip'], url_features['num_%20'],
                             url_features['num_@']]]).astype(np.int32)
 
-# Effectuer la prédiction
+# Faire la prediction
 prediction = model.predict([padded_sequence, extra_features])
 predicted_class = np.argmax(prediction, axis=1)
 class_labels = label_encoder.inverse_transform(predicted_class)
